@@ -24,8 +24,8 @@ class SplashScreenActivity : AppCompatActivity() {
         tv_app_name.typeface = typeFace
 
         Handler().postDelayed({
-            var currenUserID = FirestoreClass().getCurrentUserId()
-            if(currenUserID.isNotEmpty()){
+            val currentUserID = FirestoreClass().getCurrentUserId()
+            if(!currentUserID.equals("")){
                 startActivity(Intent(this,MainActivity::class.java))
             }else {
                 startActivity(Intent(this, IntroActivity::class.java))

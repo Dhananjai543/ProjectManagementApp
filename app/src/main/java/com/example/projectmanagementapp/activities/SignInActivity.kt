@@ -62,7 +62,7 @@ class SignInActivity : BaseActivity() {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d("Sign in", "createUserWithEmail:success")
                         val user = auth.currentUser
-                        FirestoreClass().signInUser(this)
+                        FirestoreClass().loadUserData(this)
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w("Sign in", "createUserWithEmail:failure", task.exception)

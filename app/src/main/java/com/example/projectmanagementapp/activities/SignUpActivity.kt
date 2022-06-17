@@ -49,7 +49,7 @@ class SignUpActivity : BaseActivity() {
             showProgressDialog(resources.getString(R.string.please_wait))
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password).addOnCompleteListener(
                 {
-                    task ->
+                        task ->
                     if(task.isSuccessful){
                         val firebaseUser : FirebaseUser = task.result!!.user!!
                         val registeredEmail = firebaseUser.email!!
@@ -58,6 +58,7 @@ class SignUpActivity : BaseActivity() {
                     }else{
                         Toast.makeText(this,task.exception!!.message,Toast.LENGTH_SHORT).show()
                     }
+                    hideProgressDialog()
                 }
             )
         }
@@ -82,7 +83,7 @@ class SignUpActivity : BaseActivity() {
         }
     }
 
-   public fun userRegisteredSuccess(){
+    public fun userRegisteredSuccess(){
         Toast.makeText(this,"You've successfully registered.",Toast.LENGTH_LONG).show()
         hideProgressDialog()
         FirebaseAuth.getInstance().signOut()
