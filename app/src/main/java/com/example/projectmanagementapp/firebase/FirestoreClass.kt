@@ -26,35 +26,6 @@ class FirestoreClass {
         }
     }
 
-    fun signInUser(activity: Activity) {
-        mFireStore.collection(Constants.USERS).document(getCurrentUserId()).get()
-            .addOnSuccessListener { document ->
-                Log.e("SignInUser-------------"+activity.javaClass.simpleName, document.toString())
-                val loggedInUser = document.toObject(User::class.java)
-                when (activity) {
-                    is SignInActivity -> {
-                        if (loggedInUser != null) {
-                            activity.signInSuccess(loggedInUser)
-                        }
-                    }
-                    is MainActivity -> {
-                        if (loggedInUser != null) {
-                            activity.updateNavigationUserDetails(loggedInUser)
-                        }
-                    }
-                }
-            }.addOnFailureListener { e ->
-                when (activity) {
-                    is SignInActivity -> {
-                        activity.hideProgressDialog()
-                    }
-                    is MainActivity -> {
-                        activity.hideProgressDialog()
-                    }
-                }
-                Log.e("signInUser", "Error ---", e)
-            }
-    }
     fun getCurrentUserId() : String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -64,7 +35,7 @@ class FirestoreClass {
         return currentUserID
     }
 
-    fun loadUserData(activity : Activity) {
+    fun loadUserData(activity : Activity, readBoardsList: Boolean = false) {
 
         // Here we pass the collection name from which we wants the data.
         mFireStore.collection(Constants.USERS)
@@ -83,7 +54,7 @@ class FirestoreClass {
                         activity.signInSuccess(loggedInUser)
                     }
                     is MainActivity -> {
-                        activity.updateNavigationUserDetails(loggedInUser)
+                        activity.updateNavigationUserDetails(loggedInUser, readBoardsList)
                     }
                     is MyProfileActivity -> {
                         activity.setUserDataInUI(loggedInUser)
@@ -160,6 +131,47 @@ class FirestoreClass {
                 exception ->
                 activity.hideProgressDialog()
                 Log.e(activity.javaClass.simpleName,"Error while creating a board", exception)
+            }
+    }
+
+    fun getBoardsList(activity: MainActivity){
+         mFireStore.collection(Constants.BOARDS)
+             .whereArrayContains(Constants.ASSIGNED_TO, getCurrentUserId())
+             .get()
+             .addOnSuccessListener {
+                 document ->
+                 Log.i(activity.javaClass.simpleName,document.documents.toString())
+                 val boardsList: ArrayList<Board> = ArrayList();
+                 for (i in document.documents){
+                     val board = i.toObject(Board::class.java)!!
+                     board.documentId = i.id
+                     boardsList.add(board)
+                 }
+
+                 activity.populateBoardsListToUI(boardsList)
+             }
+             .addOnFailureListener {
+                 e ->
+                 activity.hideProgressDialog()
+                 Log.e(activity.javaClass.simpleName, "Error while displaying board -- getBoardsList()")
+
+             }
+    }
+
+    fun getBoardDetails(activity: TaskListActivity, documentId: String) {
+        mFireStore.collection(Constants.BOARDS)
+            .document(documentId)
+            .get()
+            .addOnSuccessListener {
+                    document ->
+                Log.i(activity.javaClass.simpleName,document.toString())
+                activity.boardDetails(document.toObject(Board::class.java)!!)
+            }
+            .addOnFailureListener {
+                    e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while displaying board -- getBoardDetails()")
+
             }
     }
 
