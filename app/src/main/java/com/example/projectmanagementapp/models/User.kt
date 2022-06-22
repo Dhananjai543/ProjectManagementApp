@@ -18,7 +18,7 @@ data class User (
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.readLong()!!,
+        parcel.readLong(),
         parcel.readString()!!
     ) {
     }

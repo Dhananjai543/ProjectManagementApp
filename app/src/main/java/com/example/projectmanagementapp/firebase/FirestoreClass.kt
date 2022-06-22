@@ -195,4 +195,65 @@ class FirestoreClass {
             }
     }
 
+    fun getAssignedMembersList(activity: MembersActivity, assignedTo: ArrayList<String>){
+        mFireStore.collection(Constants.USERS)
+            .whereIn(Constants.ID, assignedTo)
+            .get()
+            .addOnSuccessListener {
+                document ->
+                Log.e(activity.javaClass.simpleName,document.documents.toString())
+                val usersList : ArrayList<User> = ArrayList()
+                for(i in document.documents){
+                    val user = i.toObject(User::class.java)!!
+                    usersList.add(user)
+                }
+
+                activity.setUpMembersList(usersList)
+
+            }
+            .addOnFailureListener {
+                e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName,"Error while creating a board",e)
+            }
+    }
+
+    fun getMemberDetails(activity: MembersActivity,email : String){
+        mFireStore.collection(Constants.USERS)
+            .whereEqualTo(Constants.EMAIL, email)
+            .get()
+            .addOnSuccessListener {
+                document ->
+                if(document.documents.size>0){
+                    val user = document.documents[0].toObject(User::class.java)!!
+                    activity.memberDetails(user)
+                }else{
+                    activity.hideProgressDialog()
+                    activity.showErrorSnackBar("No such member found")
+                }
+            }
+            .addOnFailureListener {
+                e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName, "Error while getting user details -- getMemberDetails()", e)
+            }
+    }
+
+    fun assignMemberToBoard(activity: MembersActivity, board: Board,user: User){
+        val assignedToHashMap = HashMap<String,Any>()
+        assignedToHashMap[Constants.ASSIGNED_TO] = board.assignedTo
+
+        mFireStore.collection(Constants.BOARDS)
+            .document(board.documentId)
+            .update(assignedToHashMap)
+            .addOnSuccessListener {
+                activity.memberAssignSuccess(user)
+            }
+            .addOnFailureListener {
+                e ->
+                activity.hideProgressDialog()
+                Log.e(activity.javaClass.simpleName,"Error while assigning the member to the board --assignMemberToBoard()",e)
+            }
+    }
+
 }
