@@ -22,6 +22,7 @@ class TaskListActivity : BaseActivity() {
 
     companion object {
         const val MEMBERS_REQUEST_CODE : Int = 13
+        const val CARD_DETAILS_REQUEST_CODE: Int = 14
     }
 
     private lateinit var mBoardDetails: Board
@@ -38,14 +39,14 @@ class TaskListActivity : BaseActivity() {
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().getBoardDetails(this,mBoardDocumentId)
     }
-    
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == Activity.RESULT_OK && requestCode == MEMBERS_REQUEST_CODE){
+        if(resultCode == Activity.RESULT_OK && requestCode == MEMBERS_REQUEST_CODE || requestCode == CARD_DETAILS_REQUEST_CODE){
             showProgressDialog(resources.getString(R.string.please_wait))
             FirestoreClass().getBoardDetails(this,mBoardDocumentId)
         }else{
-            Log.e("Cancelled","Cancelled --- onActivityResult()-- TaskListActivity")
+            Log.e("anCancelled","Cancelled --- onActivityResult()-- TaskListActivity")
         }
     }
 
@@ -141,5 +142,13 @@ class TaskListActivity : BaseActivity() {
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().addUpdateTaskList(this,mBoardDetails)
 
+    }
+
+    fun cardDetails(taskListPosition : Int, cardPosition: Int){
+        val intent = Intent(this,CardDetailsActivity::class.java)
+        intent.putExtra(Constants.BOARD_DETAIL,mBoardDetails)
+        intent.putExtra(Constants.TASK_LIST_ITEM_POSITION,taskListPosition)
+        intent.putExtra(Constants.CARD_LIST_ITEM_POSITION,cardPosition)
+        startActivityForResult(intent, CARD_DETAILS_REQUEST_CODE)
     }
 }
