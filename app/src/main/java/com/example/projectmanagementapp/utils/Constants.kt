@@ -31,6 +31,10 @@ object Constants {
     const val TASK_LIST_ITEM_POSITION: String = "task_list_item_position"
     const val CARD_LIST_ITEM_POSITION: String = "card_list_item_position"
 
+    const val BOARD_MEMBERS_LIST: String = "board_members_list"
+    const val SELECT: String = "Select"
+    const val UN_SELECT: String = "UnSelect"
+
     fun showImageChooser(activity: Activity){
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activity.startActivityForResult(galleryIntent,PICK_IMAGE_REQUEST_CODE)

@@ -1,12 +1,16 @@
 package com.example.projectmanagementapp.adapters
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagementapp.R
+import com.example.projectmanagementapp.activities.TaskListActivity
 import com.example.projectmanagementapp.models.Card
+import com.example.projectmanagementapp.models.SelectedMembers
 import kotlinx.android.synthetic.main.item_card.view.*
 
 open class CardListItemsAdapter(
@@ -32,7 +36,48 @@ open class CardListItemsAdapter(
 
         if (holder is MyViewHolder) {
 
+            if(model.labelColor.isNotEmpty()){
+                holder.itemView.view_label_color.visibility = View.VISIBLE
+                holder.itemView.view_label_color.setBackgroundColor(Color.parseColor(model.labelColor))
+            }else{
+                holder.itemView.view_label_color.visibility = View.GONE
+            }
+
             holder.itemView.tv_card_name.text = model.name
+
+            if((context as TaskListActivity).mAssignedMemberDetailList.size>0){
+                val selectedMembersList : ArrayList<SelectedMembers> = ArrayList()
+                for(i in context.mAssignedMemberDetailList.indices){
+                    for(j in model.assignedTo){
+                        if(context.mAssignedMemberDetailList[i].id == j){
+                            val selectedMember = SelectedMembers(context.mAssignedMemberDetailList[i].id,context.mAssignedMemberDetailList[i].image)
+                            selectedMembersList.add(selectedMember)
+                        }
+                    }
+                }
+
+                if(selectedMembersList.size > 0){
+                    //if the only member is the person who created the card, then don't show the recycler view
+                    if(selectedMembersList.size == 1 && selectedMembersList[0].id == model.createdBy){
+                        holder.itemView.rv_card_selected_members_list.visibility = View.GONE
+                    }else{
+                        holder.itemView.rv_card_selected_members_list.visibility = View.VISIBLE
+                        holder.itemView.rv_card_selected_members_list.layoutManager = GridLayoutManager(context,4)
+                        val adapter = CardMemberListItemsAdapter(context,selectedMembersList,false)
+                        holder.itemView.rv_card_selected_members_list.adapter = adapter
+                        adapter.setOnClickListener(object : CardMemberListItemsAdapter.OnClickListener{
+                            override fun onClick() {
+                                if(onClickListener != null){
+                                    onClickListener!!.onClick(position)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    holder.itemView.rv_card_selected_members_list.visibility = View.GONE
+                }
+            }
+
             holder.itemView.setOnClickListener {
                 if(onClickListener != null){
                     onClickListener!!.onClick(position)
