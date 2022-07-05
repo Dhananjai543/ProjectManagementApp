@@ -8,16 +8,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectmanagementapp.R
 import com.example.projectmanagementapp.activities.TaskListActivity
+import com.example.projectmanagementapp.models.Card
 import com.example.projectmanagementapp.models.Task
 import kotlinx.android.synthetic.main.activity_sign_up.*
 import kotlinx.android.synthetic.main.item_task.view.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 open class TaskListItemsAdapter (private val context : Context, private var list: ArrayList<Task>)
     : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+
+    private var mPositionDraggedFrom = -1
+    private var mPositionDraggedTo = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.item_task,parent,false)
@@ -121,6 +129,50 @@ open class TaskListItemsAdapter (private val context : Context, private var list
                     }
                 }
             )
+
+            val dividerItemDecoration = DividerItemDecoration(context,DividerItemDecoration.VERTICAL)
+            holder.itemView.rv_card_list.addItemDecoration(dividerItemDecoration)
+            val helper = ItemTouchHelper(
+                object: ItemTouchHelper.SimpleCallback(
+                    ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0){
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        dragged: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder
+                    ): Boolean {
+                        val draggedPosition = dragged.adapterPosition
+                        val targetPosition = target.adapterPosition
+
+                        if(mPositionDraggedFrom==-1){
+                            mPositionDraggedFrom = draggedPosition
+                        }
+                        mPositionDraggedTo = targetPosition
+                        Collections.swap(list[position].cards,draggedPosition, targetPosition)
+                        adapter.notifyItemMoved(draggedPosition,targetPosition)
+                        return false
+                    }
+
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun clearView(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder
+                    ) {
+                        super.clearView(recyclerView, viewHolder)
+                        if(mPositionDraggedFrom!=-1 && mPositionDraggedTo!=-1 && mPositionDraggedFrom!=mPositionDraggedTo){
+                            (context as TaskListActivity).updateCardsInTaskList(position,list[position].cards)
+                        }
+
+                        mPositionDraggedTo = -1
+                        mPositionDraggedFrom = -1
+                    }
+
+
+                }
+            )
+            helper.attachToRecyclerView(holder.itemView.rv_card_list)
         }
     }
 
@@ -149,6 +201,8 @@ open class TaskListItemsAdapter (private val context : Context, private var list
         alertDialog.setCancelable(false) // Will not allow user to cancel after clicking on remaining screen area.
         alertDialog.show()
     }
+
+
 
     private fun Int.toDp() : Int = (this / Resources.getSystem().displayMetrics.density).toInt()
 
