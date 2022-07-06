@@ -94,7 +94,7 @@ class FirestoreClass {
 
                 when (activity) {
                     is MainActivity -> {
-                        //activity.tokenUpdateSuccess()
+                        activity.tokenUpdateSuccess()
                     }
                     is MyProfileActivity -> {
                         activity.profileUpdateSuccess()
