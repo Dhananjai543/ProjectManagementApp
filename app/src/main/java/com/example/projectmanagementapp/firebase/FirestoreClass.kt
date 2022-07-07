@@ -142,7 +142,7 @@ class FirestoreClass {
              .addOnSuccessListener {
                  document ->
                  Log.i(activity.javaClass.simpleName,document.documents.toString())
-                 val boardsList: ArrayList<Board> = ArrayList();
+                 val boardsList : ArrayList<Board> = ArrayList();
                  for (i in document.documents){
                      val board = i.toObject(Board::class.java)!!
                      board.documentId = i.id
@@ -155,7 +155,6 @@ class FirestoreClass {
                  e ->
                  activity.hideProgressDialog()
                  Log.e(activity.javaClass.simpleName, "Error while displaying board -- getBoardsList()")
-
              }
     }
 

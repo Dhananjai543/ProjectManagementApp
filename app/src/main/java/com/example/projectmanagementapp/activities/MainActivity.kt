@@ -71,6 +71,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     updateFcmToken(it)
                 }
         }
+
+        // Refresh function for the layout
+        refreshLayout.setOnRefreshListener{
+
+            // This line is important as it explicitly refreshes only once
+            // If "true" it implicitly refreshes forever
+            refreshLayout.isRefreshing = false
+            FirestoreClass().loadUserData(this, true)
+        }
     }
 
     private fun setUpActionBar(){
