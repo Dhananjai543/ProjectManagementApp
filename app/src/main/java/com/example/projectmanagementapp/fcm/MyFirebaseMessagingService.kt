@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.media.Ringtone
+import android.content.SharedPreferences
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
@@ -14,6 +14,7 @@ import com.example.projectmanagementapp.R
 import com.example.projectmanagementapp.activities.MainActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.example.projectmanagementapp.utils.Constants;
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -22,6 +23,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         remoteMessage.data.isNotEmpty().let {
             Log.d(TAG,"Message data Payload: ${remoteMessage.data}")
+            val title = remoteMessage.data[Constants.FCM_KEY_TITLE]!!
+            val message = remoteMessage.data[Constants.FCM_KEY_MESSAGE]!!
+            sendNotification(title, message)
         }
         remoteMessage.notification.let {
             Log.d(TAG,"Message notification body: ${it!!.body}")
@@ -31,13 +35,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.e(TAG,"Refreshed token: ${token}")
+        sendRegistrationToServer(token)
     }
 
     private fun sendRegistrationToServer(token: String?){
-
+        val sharedPreferences =
+            this.getSharedPreferences(Constants.PROJECTMANAGEMENTAPP_PREFERENCES, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(Constants.FCM_TOKEN, token)
+        editor.apply()
     }
 
-    private fun sendNotification(messageBody: String){
+    private fun sendNotification(title: String, message: String){
         val intent = Intent(this,MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_ONE_SHOT)
@@ -46,8 +55,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationBuilder = NotificationCompat.Builder(
             this,channelID
         ).setSmallIcon(R.drawable.ic_stat_ic_notification)
-            .setContentTitle("Title")
-            .setContentText("Message")
+            .setContentTitle(title)
+            .setContentText(message)
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
